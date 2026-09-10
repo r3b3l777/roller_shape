@@ -545,8 +545,12 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:3rem
 /* ═══════════════════════════════════════════════════
    FLOATING
 ═══════════════════════════════════════════════════ */
-#social-float{position:fixed;right:1.4rem;top:50%;transform:translateY(-50%);z-index:450;display:flex;flex-direction:column;gap:.65rem;opacity:0;animation:fu .6s 3s var(--ease) forwards}
-.sf{width:32px;height:32px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:rgba(189,189,189,.35);background:rgba(11,11,11,.8);backdrop-filter:blur(10px);transition:all .22s;text-decoration:none}
+#social-float{position:fixed;right:1.4rem;top:50%;z-index:450;display:flex;flex-direction:column;gap:.65rem;opacity:0;animation:fu .6s 3s var(--ease) forwards}
+/* El centrado NO va en transform: la animación 'fu' acaba en
+   translateY(0) y lo pisaría, descolgando la columna media pantalla. */
+#social-float{translate:0 -50%}
+.sf{width:32px;height:32px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:rgba(189,189,189,.55);background:rgba(11,11,11,.92);transition:background .22s,color .22s,border-color .22s,transform .1s;text-decoration:none}
+.sf:active{transform:scale(.92)}
 .sf:hover{background:var(--wine);color:#fff;border-color:var(--wine-lt)}
 #wa{position:fixed;bottom:1.8rem;right:1.4rem;z-index:600;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#25D366;color:#000;text-decoration:none;box-shadow:0 4px 20px rgba(37,211,102,.4);transition:transform .2s,box-shadow .2s;opacity:0;animation:fu .6s 3.2s var(--ease) forwards}
 #wa:hover{transform:translateY(-3px) scale(1.06);box-shadow:0 8px 28px rgba(37,211,102,.55)}
@@ -684,7 +688,7 @@ img,svg,video{max-width:100%}
   ::-webkit-scrollbar-thumb:hover{background:var(--wine)}
 }
 /* Safari needs the prefix or the blur silently no-ops */
-#nav.scrolled,.nav-mobile,.sf{-webkit-backdrop-filter:blur(18px)}
+#nav.scrolled,.nav-mobile{-webkit-backdrop-filter:blur(18px)}
 
 /* ── 3. Keyboard focus (was invisible on macOS/Windows) ──────── */
 a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
@@ -1027,3 +1031,193 @@ body.menu-open{overflow:hidden}
 .btn-wine.is-xs{font-size:.6rem;padding:.7rem 1.5rem}
 .btn-wine.is-md{font-size:.62rem;padding:.75rem 1.5rem}
 .btn-wine.is-lg{padding:1rem 2.5rem;font-size:.7rem}
+
+/* ═══════════════════════════════════════════════════
+   HOJA DE PAGO
+   Hoja inferior en móvil, tarjeta centrada en escritorio.
+   Materializa (desenfoque + escala), no solo aparece.
+═══════════════════════════════════════════════════ */
+/* Atenúa para enfocar: es una tarea modal, no un panel paralelo. */
+.pay-scrim{
+  position:absolute;inset:0;background:rgba(6,6,6,.72);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  opacity:0;transition:opacity .32s var(--ease)
+}
+.rs-sheet-layer[data-in] .pay-scrim{opacity:1}
+
+.pay-sheet{
+  position:relative;width:100%;max-width:520px;
+  max-height:min(88dvh,760px);overflow-y:auto;overscroll-behavior:contain;
+  background:var(--surface);border:1px solid var(--border2);
+  border-bottom:0;border-radius:20px 20px 0 0;
+  padding:0 var(--gut) calc(1.6rem + var(--sab,0px));
+  transform:translateY(100%);
+  transition:transform .42s var(--ease);
+  will-change:transform
+}
+.rs-sheet-layer[data-in] .pay-sheet{transform:translateY(0)}
+/* Mientras el dedo la lleva, manda el dedo: nada de transición encima. */
+.pay-sheet.dragging{transition:none}
+
+/* Asa: dice "esto se arrastra" antes de que lo intentes. */
+.pay-grip{
+  position:sticky;top:0;z-index:2;
+  padding:.85rem 0 .7rem;background:var(--surface);
+  display:flex;justify-content:center;cursor:grab;touch-action:none
+}
+.pay-grip::before{content:'';width:38px;height:4px;border-radius:99px;background:rgba(189,189,189,.28)}
+.pay-grip:active{cursor:grabbing}
+
+.pay-head{padding-bottom:1.3rem;border-bottom:1px solid var(--border)}
+.pay-eyebrow{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--wine-lt);display:block;margin-bottom:.5rem}
+.pay-title{font-family:var(--serif);font-weight:300;font-size:1.9rem;line-height:1.1;letter-spacing:-.018em;color:var(--white)}
+
+.pay-opts{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin:1.3rem 0}
+.pay-opt{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;
+  padding:.95rem 1.1rem;text-align:left;
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;
+  color:var(--mid);cursor:pointer;
+  transition:border-color .22s,background .22s,color .22s,transform .1s
+}
+.pay-opt:hover{border-color:rgba(194,112,109,.55)}
+.pay-opt:active{transform:scale(.985)}
+.pay-opt[aria-checked="true"]{border-color:var(--wine-lt);background:rgba(194,112,109,.08);color:var(--white)}
+.pay-opt-l{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.pay-opt-n{font-size:.9rem}
+.pay-opt-tag{font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--wine-lt)}
+.pay-opt-p{font-family:var(--serif);font-size:1.35rem;font-weight:300;white-space:nowrap}
+.pay-opt-p small{font-size:.6rem;font-family:var(--sans);color:var(--dim);letter-spacing:.04em}
+/* Sin enlace de Stripe todavía: se paga en el studio, y se dice. */
+.pay-opt[data-sinlinea]{opacity:.62}
+.pay-opt[data-sinlinea] .pay-opt-tag{color:var(--dim)}
+
+.pay-total{display:flex;align-items:baseline;justify-content:space-between;padding:1rem 0;border-top:1px solid var(--border)}
+.pay-total-l{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.pay-total-v{font-family:var(--serif);font-size:1.9rem;font-weight:300;color:var(--white);letter-spacing:-.01em}
+
+.pay-cta{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:.6rem;
+  background:var(--wine);color:#fff;border:1px solid var(--wine);border-radius:12px;
+  font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;font-weight:500;
+  padding:1.05rem 1.5rem;cursor:pointer;
+  transition:background .22s,transform .1s
+}
+.pay-cta:hover{background:var(--wine-h)}
+.pay-cta:active{transform:scale(.985)}
+.pay-cta[disabled]{opacity:.4;pointer-events:none}
+.pay-alt{
+  display:block;width:100%;text-align:center;margin-top:.7rem;padding:.85rem;
+  font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  background:none;border:1px solid var(--border2);border-radius:12px;cursor:pointer;
+  transition:color .22s,border-color .22s
+}
+.pay-alt:hover{color:var(--white);border-color:var(--border2)}
+
+/* Métodos aceptados: se ven ANTES de dar clic, no después. */
+.pay-methods{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-top:1.1rem}
+.pay-badge{
+  height:26px;padding:0 .5rem;display:inline-flex;align-items:center;gap:.25rem;
+  border:1px solid var(--border2);border-radius:6px;background:var(--card);
+  font-size:.55rem;letter-spacing:.08em;color:var(--mid);white-space:nowrap
+}
+.pay-badge svg{height:13px;width:auto;fill:currentColor}
+.pay-safe{
+  display:flex;gap:.55rem;margin-top:1.1rem;
+  font-size:.66rem;line-height:1.6;color:var(--dim)
+}
+.pay-safe svg{width:14px;height:14px;flex:none;margin-top:.2rem;fill:none;stroke:var(--wine-lt);stroke-width:1.6}
+
+@media(min-width:681px){
+  .rs-sheet-layer{align-items:center;padding:2rem}
+  .pay-sheet{
+    border-radius:18px;border-bottom:1px solid var(--border2);
+    padding-left:2.2rem;padding-right:2.2rem;padding-bottom:2rem;
+    /* Llega como material: se acerca y se enfoca a la vez. */
+    transform:translateY(14px) scale(.96);opacity:0;
+    transition:transform .42s var(--ease),opacity .28s var(--ease)
+  }
+  .rs-sheet-layer[data-in] .pay-sheet{transform:none;opacity:1}
+  .pay-grip{display:none}
+}
+
+@media(prefers-reduced-transparency:reduce){
+  .pay-scrim{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(6,6,6,.94)}
+}
+@media(prefers-reduced-motion:reduce){
+  /* Sin deslizamiento: fundido corto, que no marea. */
+  .pay-sheet{transform:none!important;opacity:0}
+  .rs-sheet-layer[data-in] .pay-sheet{opacity:1}
+}
+
+/* Selector genérico: la hoja de pago y la de reserva comparten shell. */
+.rs-sheet-layer{
+  position:fixed;inset:0;z-index:9000;display:none;
+  align-items:flex-end;justify-content:center
+}
+.rs-sheet-layer[data-open]{display:flex}
+.rs-sheet-layer[data-ancho="ancha"] .pay-sheet{max-width:760px}
+.pay-body{display:flex;flex-direction:column;min-height:0}
+
+/* Cerrar con un botón real: no todo el mundo arrastra ni sabe del Esc. */
+.pay-x{
+  position:absolute;top:.65rem;right:.65rem;z-index:3;
+  width:44px;height:44px;display:grid;place-items:center;
+  color:var(--dim);background:none;border:0;cursor:pointer;border-radius:50%;
+  transition:color .2s,background .2s,transform .1s
+}
+.pay-x svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+.pay-x:hover{color:var(--white);background:var(--card2)}
+.pay-x:active{transform:scale(.9)}
+
+/* ── Hoja de reserva ─────────────────────────────────────────── */
+.book-head{padding:0 3rem .1rem 0;flex:none}
+.book-title{
+  font-family:var(--serif);font-weight:300;font-size:1.9rem;
+  line-height:1.08;letter-spacing:-.02em;color:var(--white);margin-top:.15rem
+}
+
+.book-load{
+  display:flex;align-items:center;justify-content:center;gap:.7rem;
+  padding:3rem 0;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)
+}
+.book-spin{
+  width:16px;height:16px;border:1.5px solid var(--border2);
+  border-top-color:var(--wine-lt);border-radius:50%;
+  animation:bspin .8s linear infinite
+}
+@keyframes bspin{to{transform:rotate(360deg)}}
+.book-load[hidden]{display:none}
+
+/* La agenda pide alto: se le da casi toda la hoja. */
+.book-frame{
+  width:100%;flex:1 1 auto;min-height:min(72dvh,620px);
+  border:0;border-radius:14px;background:var(--black);
+  margin-top:1.1rem;display:block
+}
+.book-frame:not([src]){display:none}
+/* Marco embebido, no caja pegada: un filete tenue y una sombra interior
+   que hunde el contenido ajeno medio milímetro respecto de la hoja. */
+.book-wrap{
+  position:relative;flex:1 1 auto;display:flex;min-height:0;
+  border-radius:14px;overflow:hidden;
+  box-shadow:inset 0 0 0 1px var(--border2),0 18px 40px -30px #000
+}
+/* Pie: quién opera esto y cómo salir de aquí, en la misma línea. */
+.book-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  flex-wrap:wrap;margin-top:1rem;flex:none
+}
+.book-note{
+  display:flex;align-items:flex-start;gap:.5rem;
+  font-size:.64rem;line-height:1.55;color:var(--dim);max-width:38ch
+}
+.book-note svg{width:13px;height:13px;flex:none;margin-top:.15rem;fill:none;stroke:var(--wine-lt);stroke-width:1.6;stroke-linejoin:round}
+
+@media(prefers-reduced-motion:reduce){ .book-spin{animation:none;border-top-color:var(--border2)} }
+@media(max-width:680px){
+  .book-head{padding-right:2.8rem}
+  .book-title{font-size:1.55rem}
+  .book-frame{min-height:62dvh}
+  .book-foot{flex-direction:column;align-items:stretch}
+}

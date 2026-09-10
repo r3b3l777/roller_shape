@@ -4,6 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1"/>
 <meta name="theme-color" content="#0B0B0B"/>
+<!-- Respaldo de CSP para hosts que no leen vercel.json ni _headers.
+     frame-ancestors no funciona en <meta>: ese va en la cabecera real
+     (o en X-Frame-Options), por eso los tres archivos y no uno. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'self' https://checkout.stripe.com https://buy.stripe.com; frame-src https://checkout.stripe.com https://buy.stripe.com https://*.setmore.com; base-uri 'none'; object-src 'none'; upgrade-insecure-requests"/>
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta name="color-scheme" content="dark"/>
 <meta name="format-detection" content="telephone=no"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -34,22 +39,22 @@
 
 <!-- SOCIAL FLOAT -->
 <div id="social-float">
-  <a href="https://www.instagram.com/rollershapemetepec" target="_blank" class="sf" aria-label="Instagram">
+  <a href="https://www.instagram.com/rollershapemetepec" target="_blank" rel="noopener noreferrer" class="sf" aria-label="Instagram">
     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
   </a>
-  <a href="https://www.facebook.com/profile.php?id=61588189536291" target="_blank" class="sf" aria-label="Facebook">
+  <a href="https://www.facebook.com/profile.php?id=61588189536291" target="_blank" rel="noopener noreferrer" class="sf" aria-label="Facebook">
     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
   </a>
-  <a href="https://www.tiktok.com/@rollershapemetepec" target="_blank" class="sf" aria-label="TikTok">
+  <a href="https://www.tiktok.com/@rollershapemetepec" target="_blank" rel="noopener noreferrer" class="sf" aria-label="TikTok">
     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.78a4.85 4.85 0 0 1-1-.09z"/></svg>
   </a>
-  <a href="https://wa.me/527207940814" target="_blank" class="sf" aria-label="WhatsApp">
+  <a href="https://wa.me/527207940814" target="_blank" rel="noopener noreferrer" class="sf" aria-label="WhatsApp">
     <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
   </a>
 </div>
 
 <!-- WA BUTTON -->
-<a id="wa" href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20reservar%20una%20sesi%C3%B3n%20en%20Roller%20Shape%20Studio%20Metepec" target="_blank" aria-label="Escríbenos por WhatsApp">
+<a id="wa" href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20reservar%20una%20sesi%C3%B3n%20en%20Roller%20Shape%20Studio%20Metepec" target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp">
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
 </a>
 
@@ -67,21 +72,21 @@
     <a href="#contacto">Contacto</a>
   </div>
   <div class="nav-right">
-    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="nav-book">Reservar</a>
+    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="nav-book">Reservar</a>
     <button class="nav-ham" id="nav-ham" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-mobile"><span></span><span></span><span></span></button>
   </div>
 </nav>
 <!-- Mobile menu -->
 <div class="nav-mobile" id="nav-mobile">
-  <a href="#equipos" onclick="closeMobile()">Equipos</a>
-  <a href="#paquetes" onclick="closeMobile()">Paquetes</a>
-  <a href="#eventos" onclick="closeMobile()">Eventos</a>
-  <a href="#productos" onclick="closeMobile()">Productos</a>
-  <a href="#galeria" onclick="closeMobile()">Galería</a>
-  <a href="#resenas" onclick="closeMobile()">Reseñas</a>
-  <a href="#about" onclick="closeMobile()">Nosotros</a>
-  <a href="#contacto" onclick="closeMobile()">Contacto</a>
-  <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="nav-book">Reservar Sesión</a>
+  <a href="#equipos">Equipos</a>
+  <a href="#paquetes">Paquetes</a>
+  <a href="#eventos">Eventos</a>
+  <a href="#productos">Productos</a>
+  <a href="#galeria">Galería</a>
+  <a href="#resenas">Reseñas</a>
+  <a href="#about">Nosotros</a>
+  <a href="#contacto">Contacto</a>
+  <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="nav-book">Reservar Sesión</a>
 </div>
 
 <!-- ════════════ HERO ════════════ -->
@@ -108,7 +113,7 @@
     <p class="h-sub2">Tecnología vanguardista da resultados reales</p>
     <p class="h-sub">Studio de wellness corporal con tecnología avanzada. Prueba tu primera sesión de 15 minutos y siente los resultados desde el día uno.</p>
     <div class="h-actions">
-      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="btn-wine">Reservar Sesión</a>
+      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="btn-wine">Reservar Sesión</a>
       <a href="#equipos" class="btn-line">Ver equipos →</a>
     </div>
   </div>
@@ -146,7 +151,7 @@
     <h3 class="ab-cta-h">¿Primera vez? <em>Pruébalo gratis.</em></h3>
     <p class="ab-cta-sub">Reserva tu primera sesión de prueba, de 15 min, hoy — sin compromiso, sin tarjeta.</p>
   </div>
-  <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="btn-wine">Reservar prueba gratis →</a>
+  <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="btn-wine">Reservar prueba gratis →</a>
 </div>
 
 <!-- ════════════ EQUIPOS ════════════ -->
@@ -165,7 +170,7 @@
       <div class="ec-img">
         <img width="562" height="1000" loading="lazy" decoding="async" src="img/the-roller-roller-shape-studio-metepec.webp" alt="The Roller — Roller Shape Studio Metepec"/>
         <span class="ec-num">01</span>
-        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-hcta">Reservar sesión →</a></div>
+        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-hcta">Reservar sesión →</a></div>
       </div>
       <div class="ec-body">
         <div class="ec-name">The Roller</div>
@@ -180,7 +185,7 @@
       </div>
       <div class="ec-foot">
         <div><div class="ec-price">Sesión Sencilla</div><div class="ec-dur">30 min · 1 aparato</div></div>
-        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-btn">Reservar</a>
+        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-btn">Reservar</a>
       </div>
     </div>
 
@@ -189,7 +194,7 @@
       <div class="ec-img">
         <img width="460" height="1000" loading="lazy" decoding="async" src="img/infrabike-roller-shape-studio-metepec.webp" alt="InfraBike — Roller Shape Studio Metepec"/>
         <span class="ec-num">02</span>
-        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-hcta">Reservar sesión →</a></div>
+        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-hcta">Reservar sesión →</a></div>
       </div>
       <div class="ec-body">
         <div class="ec-name">InfraBike</div>
@@ -204,7 +209,7 @@
       </div>
       <div class="ec-foot">
         <div><div class="ec-price">Sesión Doble</div><div class="ec-dur">60 min · 2 aparatos</div></div>
-        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-btn">Reservar</a>
+        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-btn">Reservar</a>
       </div>
     </div>
 
@@ -213,7 +218,7 @@
       <div class="ec-img">
         <img width="1046" height="1100" loading="lazy" decoding="async" src="img/the-vacuum-roller-shape-studio-metepec.webp" alt="The Vacuum — Roller Shape Studio Metepec"/>
         <span class="ec-num">03</span>
-        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-hcta">Reservar sesión →</a></div>
+        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-hcta">Reservar sesión →</a></div>
       </div>
       <div class="ec-body">
         <div class="ec-name">The Vacuum</div>
@@ -228,7 +233,7 @@
       </div>
       <div class="ec-foot">
         <div><div class="ec-price">Sesión Doble</div><div class="ec-dur">60 min · 2 aparatos</div></div>
-        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-btn">Reservar</a>
+        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-btn">Reservar</a>
       </div>
     </div>
 
@@ -237,7 +242,7 @@
       <div class="ec-img">
         <img width="573" height="999" loading="lazy" decoding="async" src="img/cama-infrarrojo-roller-shape-studio-metepec.webp" alt="Cama Infrarrojo — Roller Shape Studio Metepec"/>
         <span class="ec-num">04</span>
-        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-hcta">Reservar sesión →</a></div>
+        <div class="ec-hover"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-hcta">Reservar sesión →</a></div>
       </div>
       <div class="ec-body">
         <div class="ec-name">Cama Infrarrojo</div>
@@ -252,7 +257,7 @@
       </div>
       <div class="ec-foot">
         <div><div class="ec-price">Sesión Sencilla</div><div class="ec-dur">30 min · 1 aparato</div></div>
-        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="ec-btn">Reservar</a>
+        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="ec-btn">Reservar</a>
       </div>
     </div>
 
@@ -283,7 +288,7 @@
         <li><span class="pk-name">10 Sesiones</span><span class="pk-price">$3,500</span></li>
         <li><span class="pk-name">15 Sesiones</span><span class="pk-price">$4,950</span></li>
       </ul>
-      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="pk-btn">Reservar →</a>
+      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" data-plan="sencilla" class="pk-btn">Reservar →</a>
     </div>
 
     <!-- Sesión Doble 60 min (2 aparatos) -->
@@ -299,7 +304,7 @@
         <li><span class="pk-name">15 Sesiones</span><span class="pk-price">$6,750</span></li>
       </ul>
       <p class="pk-col-note">Combina cualquiera de los 4 aparatos — The Roller, InfraBike, The Vacuum o Cama Infrarrojo — dos por sesión.</p>
-      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="pk-btn">Reservar →</a>
+      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" data-plan="doble" class="pk-btn">Reservar →</a>
     </div>
 
     <!-- Membresías -->
@@ -314,7 +319,7 @@
         <li><span class="pk-name">6 Meses · Sencilla</span><span class="pk-price">$36,000</span></li>
         <li><span class="pk-name">6 Meses · Doble</span><span class="pk-price">$42,000</span></li>
       </ul>
-      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="pk-btn">Reservar →</a>
+      <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" data-plan="membresias" class="pk-btn">Reservar →</a>
     </div>
   </div>
   <p class="pk-note rv">Precios en pesos mexicanos (MXN). Consulta disponibilidad y condiciones al reservar.</p>
@@ -328,7 +333,7 @@
       <div class="eyebrow gold"><div class="e-l"></div><span class="e-t">Futuristic Body Wellness · Metepec</span></div>
       <h2 class="sec-h">El studio de wellness<br><em>tecnológico que<br>transforma tu cuerpo, salud y mente</em></h2>
       <div class="ab-actions">
-        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="btn-wine">Reservar sesión →</a>
+        <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="btn-wine">Reservar sesión →</a>
         <a href="#equipos" class="btn-line">Ver equipos</a>
       </div>
     </div>
@@ -362,7 +367,7 @@
     </div>
     <div class="ev-head-r rv d2">
       <p>Roller Shape Studio es el escenario perfecto para grupos femeninos. Cada evento es 100% personalizado — no manejamos paquetes fijos — así que cotizamos tu experiencia a la medida directo por WhatsApp: sesiones exclusivas, decoración, catering y detalles únicos de wellness en un ambiente premium.</p>
-      <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20cotizar%20un%20evento%20privado%20en%20Roller%20Shape%20Studio" target="_blank" class="btn-wine is-sm">Cotizar mi evento →</a>
+      <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20cotizar%20un%20evento%20privado%20en%20Roller%20Shape%20Studio" target="_blank" rel="noopener noreferrer" class="btn-wine is-sm">Cotizar mi evento →</a>
     </div>
   </div>
   <div class="ev-mosaic">
@@ -382,7 +387,7 @@
   <div class="ev-cta rv d1">
     <div><div class="ev-cta-h">¿Lista para<br><em>celebrar diferente?</em></div><div class="ev-cta-sub">Paquetes 100% personalizados · Cotiza tu evento directo por WhatsApp · Grupos desde 4 personas · Metepec</div></div>
     <div class="ev-cta-btns">
-      <a href="https://wa.me/527207940814?text=Hola%2C%20quiero%20cotizar%20un%20evento%20privado%20en%20Roller%20Shape%20Studio%20Metepec" target="_blank" class="btn-wine">WhatsApp — Cotizar →</a>
+      <a href="https://wa.me/527207940814?text=Hola%2C%20quiero%20cotizar%20un%20evento%20privado%20en%20Roller%20Shape%20Studio%20Metepec" target="_blank" rel="noopener noreferrer" class="btn-wine">WhatsApp — Cotizar →</a>
       <a href="tel:+527207940814" class="btn-line">+52 720 794 0814</a>
     </div>
   </div>
@@ -416,7 +421,7 @@
           <div class="prod-detail-row"><span>Marca</span><span>Aldana Healthy Foods</span></div>
         </div>
         <div class="prod-cta">
-          <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20el%20Cold%20Press%20Boost%20Inmune" target="_blank" class="btn-wine is-xs">Preguntar disponibilidad →</a>
+          <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20el%20Cold%20Press%20Boost%20Inmune" target="_blank" rel="noopener noreferrer" class="btn-wine is-xs">Preguntar disponibilidad →</a>
         </div>
       </div>
     </div>
@@ -438,7 +443,7 @@
           <div class="prod-detail-row"><span>Branding</span><span>Roller Shape Studio Metepec</span></div>
         </div>
         <div class="prod-cta">
-          <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20el%20Roller%20Shape%20Kit" target="_blank" class="btn-wine is-xs">Preguntar disponibilidad →</a>
+          <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20el%20Roller%20Shape%20Kit" target="_blank" rel="noopener noreferrer" class="btn-wine is-xs">Preguntar disponibilidad →</a>
         </div>
       </div>
     </div>
@@ -457,7 +462,7 @@
     <div class="sc rv d2"><span class="sc-n">4</span><div class="sc-l">tecnologías<br>combinadas</div></div>
   </div>
   <div class="stats-cta rv d2">
-    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="btn-wine">Reservar mi sesión →</a>
+    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="btn-wine">Reservar mi sesión →</a>
     <a href="tel:+527207940814" class="btn-line">+52 720 794 0814</a>
   </div>
 </section>
@@ -478,7 +483,7 @@
 <section id="galeria">
   <div class="gal-head rv">
     <div><div class="eyebrow"><div class="e-l"></div><span class="e-t">Galería</span></div><h2 class="sec-h">Nuestro <em>Espacio</em></h2></div>
-    <a href="https://rollershapestudiometepec.setmore.com/gallery" target="_blank" class="btn-line">Ver todas →</a>
+    <a href="https://rollershapestudiometepec.setmore.com/gallery" target="_blank" rel="noopener noreferrer" class="btn-line">Ver todas →</a>
   </div>
   <div class="gal-grid">
     <div class="gc g1 rv"><img width="562" height="1000" loading="lazy" decoding="async" src="img/the-roller-roller-shape-studio-metepec.webp" alt="The Roller Studio Metepec"/></div>
@@ -523,12 +528,12 @@
       <tr><td>Sábado</td><td>8:00 – 14:00</td></tr>
       <tr class="cl"><td>Domingo</td><td>Cerrado</td></tr>
     </table>
-    <div class="co-cta"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="btn-wine">Agendar en línea →</a></div>
+    <div class="co-cta"><a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="btn-wine">Agendar en línea →</a></div>
   </div>
   <div class="co-r rv d2">
     <div class="eyebrow"><div class="e-l"></div><span class="e-t">Ubicación</span></div>
     <h2 class="sec-h">Encuéntranos en<br><em>Plaza Árbol de la Vida</em></h2>
-    <a class="plaza-wrap" href="https://www.google.com/maps/search/?api=1&query=2330+Calle+Adolfo+L%C3%B3pez+Mateos+San+Salvador+Tizatlalli+Metepec+Estado+de+Mexico+52148" target="_blank">
+    <a class="plaza-wrap" href="https://www.google.com/maps/search/?api=1&query=2330+Calle+Adolfo+L%C3%B3pez+Mateos+San+Salvador+Tizatlalli+Metepec+Estado+de+Mexico+52148" target="_blank" rel="noopener noreferrer">
       <img width="1164" height="799" loading="lazy" decoding="async" src="img/plaza-arbol-de-la-vida-metepec.webp" alt="Plaza Árbol de la Vida Metepec"/>
       <div class="plaza-over">
         <div>
@@ -540,15 +545,15 @@
     </a>
     <div class="co-phone"><a href="tel:+527207940814">+52 720 794 0814</a></div>
     <div class="co-addr mt-sm">
-      <a href="https://www.google.com/maps/search/?api=1&query=2330+Calle+Adolfo+L%C3%B3pez+Mateos+San+Salvador+Tizatlalli+Metepec+Estado+de+Mexico+52148" target="_blank">2330 Calle Adolfo López Mateos · San Salvador Tizatlalli<br>52148 Metepec, Estado de México</a>
+      <a href="https://www.google.com/maps/search/?api=1&query=2330+Calle+Adolfo+L%C3%B3pez+Mateos+San+Salvador+Tizatlalli+Metepec+Estado+de+Mexico+52148" target="_blank" rel="noopener noreferrer">2330 Calle Adolfo López Mateos · San Salvador Tizatlalli<br>52148 Metepec, Estado de México</a>
     </div>
     <div class="co-addr mt-xs">
       <a href="mailto:claudiarb@rollershapestudiometepec.com">claudiarb@rollershapestudiometepec.com</a><br>
-      <a href="https://www.rollershapestudiometepec.com" target="_blank">rollershapestudiometepec.com</a>
+      <a href="https://www.rollershapestudiometepec.com" target="_blank" rel="noopener noreferrer">rollershapestudiometepec.com</a>
     </div>
     <div class="co-btns">
-      <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20Roller%20Shape%20Studio%20Metepec" target="_blank" class="btn-wine is-md">WhatsApp →</a>
-      <a href="https://www.google.com/maps/search/?api=1&query=2330+Calle+Adolfo+L%C3%B3pez+Mateos+San+Salvador+Tizatlalli+Metepec+Estado+de+Mexico+52148" target="_blank" class="btn-line">Cómo llegar →</a>
+      <a href="https://wa.me/527207940814?text=Hola%2C%20me%20gustar%C3%ADa%20informaci%C3%B3n%20sobre%20Roller%20Shape%20Studio%20Metepec" target="_blank" rel="noopener noreferrer" class="btn-wine is-md">WhatsApp →</a>
+      <a href="https://www.google.com/maps/search/?api=1&query=2330+Calle+Adolfo+L%C3%B3pez+Mateos+San+Salvador+Tizatlalli+Metepec+Estado+de+Mexico+52148" target="_blank" rel="noopener noreferrer" class="btn-line">Cómo llegar →</a>
     </div>
   </div>
 </section>
@@ -560,7 +565,7 @@
   <h2 class="cta-h rv d1">Tu cuerpo<br><em>te lo va a agradecer</em></h2>
   <p class="cta-sub rv d2">Agenda hoy. Sin compromisos. Solo 15 minutos de prueba que van a cambiar cómo te ves y cómo te sientes.</p>
   <div class="cta-btns rv d3">
-    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" class="btn-wine is-lg">Reservar Sesión</a>
+    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer" class="btn-wine is-lg">Reservar Sesión</a>
     <a href="tel:+527207940814" class="btn-line">Llamar ahora</a>
   </div>
 </section>
@@ -577,17 +582,18 @@
     <a href="#eventos">Eventos</a>
     <a href="#resenas">Reseñas</a>
     <a href="#contacto">Contacto</a>
-    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank">Reservar</a>
+    <a href="https://rollershapestudiometepec.setmore.com/book" target="_blank" rel="noopener noreferrer">Reservar</a>
   </nav>
   <div class="f-soc">
-    <a href="https://www.instagram.com/rollershapemetepec" target="_blank" class="f-s"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
-    <a href="https://www.facebook.com/profile.php?id=61588189536291" target="_blank" class="f-s"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-    <a href="https://www.tiktok.com/@rollershapemetepec" target="_blank" class="f-s"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.78a4.85 4.85 0 0 1-1-.09z"/></svg></a>
-    <a href="https://wa.me/527207940814" target="_blank" class="f-s"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg></a>
+    <a href="https://www.instagram.com/rollershapemetepec" target="_blank" rel="noopener noreferrer" class="f-s"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+    <a href="https://www.facebook.com/profile.php?id=61588189536291" target="_blank" rel="noopener noreferrer" class="f-s"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+    <a href="https://www.tiktok.com/@rollershapemetepec" target="_blank" rel="noopener noreferrer" class="f-s"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.78a4.85 4.85 0 0 1-1-.09z"/></svg></a>
+    <a href="https://wa.me/527207940814" target="_blank" rel="noopener noreferrer" class="f-s"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg></a>
   </div>
   <div class="f-copy">© 2026 Roller Shape Studio Metepec · Futuristic Body Wellness · San Salvador Tizatlalli, Estado de México</div>
 </footer>
 
+<script src="js/pagos.js" defer></script>
 <script src="js/app.js" defer></script>
 
 </body>

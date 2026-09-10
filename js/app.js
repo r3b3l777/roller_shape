@@ -338,3 +338,364 @@ if(mReduce.addEventListener){
 }
 
 })();
+
+/* ═══════════════════════════════════════════════════════════════
+   HOJA MODAL — pieza compartida
+   Hoja inferior en móvil (se arrastra para cerrar), tarjeta centrada
+   en escritorio. La usan la hoja de pago y la de reserva; escribirla
+   dos veces sería mantener dos veces la trampa de foco y el arrastre.
+═══════════════════════════════════════════════════════════════ */
+var RSHoja = (function(){
+  'use strict';
+  var reduce = window.matchMedia
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+
+  // textContent siempre: nunca innerHTML, ni siquiera con datos propios.
+  function el(tag, cls, texto){
+    var e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(texto != null) e.textContent = texto;
+    return e;
+  }
+
+  // Un solo helper de SVG: nada de innerHTML para pintar iconos.
+  function svgTrazo(d){
+    var ns='http://www.w3.org/2000/svg';
+    var s=document.createElementNS(ns,'svg');
+    s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('aria-hidden','true');
+    var p=document.createElementNS(ns,'path'); p.setAttribute('d',d);
+    s.appendChild(p); return s;
+  }
+
+  function crear(opts){
+    var capa = el('div', 'rs-sheet-layer');
+    capa.id = opts.id;
+    capa.setAttribute('role','dialog');
+    capa.setAttribute('aria-modal','true');
+    capa.setAttribute('aria-labelledby', opts.id + '-title');
+    if(opts.ancho) capa.setAttribute('data-ancho', opts.ancho);
+
+    var scrim = el('div','pay-scrim');
+    var hoja  = el('div','pay-sheet');
+    var grip  = el('div','pay-grip');
+    grip.setAttribute('aria-hidden','true');
+    var cuerpo = el('div','pay-body');
+
+    // Cerrar con teclado sin depender del arrastre ni del scrim.
+    var cerrarBtn = el('button','pay-x');
+    cerrarBtn.type = 'button';
+    cerrarBtn.setAttribute('aria-label','Cerrar');
+    cerrarBtn.appendChild(svgTrazo('M6 6l12 12M18 6L6 18'));
+
+    hoja.appendChild(grip); hoja.appendChild(cerrarBtn); hoja.appendChild(cuerpo);
+    capa.appendChild(scrim); capa.appendChild(hoja);
+    document.body.appendChild(capa);
+
+    var focoPrevio = null, cerrando = false;
+
+    function abrir(origen){
+      if(capa.hasAttribute('data-open')) return;
+      focoPrevio = origen || document.activeElement;
+      capa.setAttribute('data-open','');
+      document.body.classList.add('menu-open');     // congela el fondo
+      // Un reflow forzado fija el estado inicial antes de cambiarlo, que
+      // es lo que hace arrancar la transición. Con requestAnimationFrame
+      // esto se quedaba a medias si la pestaña no tenía el foco.
+      void hoja.offsetHeight;
+      capa.setAttribute('data-in','');
+      var f = (opts.focoInicial && opts.focoInicial()) || cerrarBtn;
+      if(f && f.focus) f.focus({preventScroll:true});
+      if(opts.alAbrir) opts.alAbrir();
+    }
+
+    function cerrar(){
+      if(cerrando || !capa.hasAttribute('data-open')) return;
+      cerrando = true;
+      hoja.classList.remove('dragging');
+      hoja.style.transform = '';        // devuelve el mando al CSS
+      capa.removeAttribute('data-in');
+      document.body.classList.remove('menu-open');
+      var fin = function(){
+        capa.removeAttribute('data-open');
+        cerrando = false;
+        if(opts.alCerrar) opts.alCerrar();
+        if(focoPrevio && focoPrevio.focus) focoPrevio.focus({preventScroll:true});
+      };
+      reduce ? fin() : setTimeout(fin, 420);
+    }
+
+    scrim.addEventListener('click', cerrar);
+    cerrarBtn.addEventListener('click', cerrar);
+
+    document.addEventListener('keydown', function(e){
+      if(!capa.hasAttribute('data-open')) return;
+      if(e.key === 'Escape'){ e.preventDefault(); cerrar(); return; }
+      if(e.key !== 'Tab') return;
+      // Un diálogo modal no suelta el tabulador a la página de atrás.
+      var f = hoja.querySelectorAll('button:not([disabled]),a[href],iframe,input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      if(!f.length) return;
+      var pri = f[0], ult = f[f.length-1];
+      if(e.shiftKey && document.activeElement === pri){ e.preventDefault(); ult.focus(); }
+      else if(!e.shiftKey && document.activeElement === ult){ e.preventDefault(); pri.focus(); }
+    });
+
+    /* Arrastre para cerrar.
+       Sigue al dedo 1:1 y al soltar decide por la VELOCIDAD proyectada,
+       no por dónde quedó: un tirón corto y rápido cierra; bajarla despacio
+       hasta media pantalla y frenar la devuelve a su sitio. Eso es lo que
+       la hace sentir un objeto en vez de un menú que aparece. */
+    if(!reduce) (function(){
+      var y0=0, y=0, vel=0, ultY=0, ultT=0, activo=false, alto=0;
+      // Más allá del tope, menos sigue: lo real frena antes de parar.
+      function goma(over, dim){ return (over*dim*0.55)/(dim + 0.55*Math.abs(over)); }
+      // Proyección de Apple (Designing Fluid Interfaces), no v²/2a.
+      function proyectar(v){ return (v/1000)*0.996/(1-0.996); }
+
+      grip.addEventListener('pointerdown', function(e){
+        if(!capa.hasAttribute('data-open') || cerrando) return;
+        activo=true; y0=e.clientY; y=0; vel=0;
+        ultY=e.clientY; ultT=performance.now();
+        alto=hoja.offsetHeight||1;
+        hoja.classList.add('dragging');
+        grip.setPointerCapture(e.pointerId);
+      });
+      grip.addEventListener('pointermove', function(e){
+        if(!activo) return;
+        var d = e.clientY - y0;
+        y = d >= 0 ? d : -goma(-d, alto);   // hacia arriba: resistencia
+        hoja.style.transform = 'translateY(' + y + 'px)';
+        var t=performance.now(), dt=t-ultT;
+        if(dt>0){ vel = 0.7*((e.clientY-ultY)/dt*1000) + 0.3*vel; ultY=e.clientY; ultT=t; }
+      });
+      function soltar(e){
+        if(!activo) return;
+        activo=false;
+        try{ grip.releasePointerCapture(e.pointerId); }catch(_){}
+        hoja.classList.remove('dragging');
+        var destino = y + proyectar(vel);
+        hoja.style.transform = '';
+        if(vel > 350 || destino > alto*0.42) cerrar();
+      }
+      grip.addEventListener('pointerup', soltar);
+      grip.addEventListener('pointercancel', soltar);
+    })();
+
+    return {capa:capa, hoja:hoja, cuerpo:cuerpo, abrir:abrir, cerrar:cerrar,
+            tituloId: opts.id + '-title', el:el, reduce:reduce};
+  }
+
+  return {crear:crear, el:el, svgTrazo:svgTrazo, reduce:reduce};
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   HOJA DE PAGO
+   El cobro ocurre en Stripe, no aquí. Esta hoja solo elige paquete y
+   redirige. Ni un campo de tarjeta vive en este sitio: los datos van
+   del navegador a Stripe sin pasar por aquí, así que no hay nada que
+   filtrar, nada que almacenar y nada que cumplir de PCI más allá del
+   nivel más bajo. Sin JS o sin enlaces, los botones siguen a Setmore.
+═══════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var CFG = window.RS_PAGOS;
+  if(!CFG || !CFG.planes) return;
+  var disparadores = document.querySelectorAll('[data-plan]');
+  if(!disparadores.length) return;
+
+  var el = RSHoja.el;
+  var precio = function(n){ return '$' + Number(n).toLocaleString('es-MX'); };
+
+  var H = RSHoja.crear({id:'pay', ancho:'chica',
+    focoInicial: function(){ return lista.querySelector('.pay-opt[aria-checked="true"]'); }});
+  var c = H.cuerpo;
+
+  var head    = el('div','pay-head');
+  var eyebrow = el('span','pay-eyebrow');
+  var titulo  = el('h2','pay-title'); titulo.id = H.tituloId;
+  head.appendChild(eyebrow); head.appendChild(titulo);
+
+  var lista  = el('ul','pay-opts');
+  lista.setAttribute('role','radiogroup');
+  lista.setAttribute('aria-label','Elige tu paquete');
+
+  var total  = el('div','pay-total');
+  var totalV = el('span','pay-total-v','—');
+  total.appendChild(el('span','pay-total-l','Total'));
+  total.appendChild(totalV);
+
+  var cta = el('button','pay-cta','Continuar al pago seguro'); cta.type='button';
+  var alt = el('button','pay-alt','Prefiero reservar y pagar en el studio'); alt.type='button';
+
+  // Los métodos se anuncian ANTES del clic: nadie debería descubrir en
+  // la pasarela que su forma de pago no estaba.
+  var metodos = el('div','pay-methods');
+  ['Apple Pay','Google Pay','Visa','Mastercard','AMEX'].forEach(function(m){
+    metodos.appendChild(el('span','pay-badge', m));
+  });
+
+  var safe = el('div','pay-safe');
+  var esc = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  esc.setAttribute('viewBox','0 0 24 24'); esc.setAttribute('aria-hidden','true');
+  var pp = document.createElementNS('http://www.w3.org/2000/svg','path');
+  pp.setAttribute('d','M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z');
+  pp.setAttribute('stroke-linejoin','round');
+  esc.appendChild(pp); safe.appendChild(esc);
+  safe.appendChild(el('span','','Pago procesado por Stripe. Roller Shape Studio nunca ve ni ' +
+    'almacena los datos de tu tarjeta: viajan cifrados de tu navegador a Stripe.'));
+
+  [head, lista, total, cta, alt, metodos, safe].forEach(function(n){ c.appendChild(n); });
+
+  var elegida = null, plan = null;
+
+  function pintar(clave){
+    plan = CFG.planes[clave];
+    if(!plan) return false;
+    eyebrow.textContent = plan.nota || '';
+    titulo.textContent  = plan.titulo || '';
+    lista.textContent   = '';
+    elegida = null; totalV.textContent = '—'; cta.disabled = true;
+
+    plan.opciones.forEach(function(op, i){
+      var b = el('button','pay-opt'); b.type='button';
+      b.setAttribute('role','radio'); b.setAttribute('aria-checked','false');
+      if(!op.link) b.setAttribute('data-sinlinea','');
+      var izq = el('div','pay-opt-l');
+      izq.appendChild(el('span','pay-opt-n', op.nombre));
+      var tag = op.link ? op.destacar : 'Se paga en el studio';
+      if(tag) izq.appendChild(el('span','pay-opt-tag', tag));
+      var der = el('span','pay-opt-p', precio(op.precio));
+      if(op.periodo) der.appendChild(el('small','', op.periodo));
+      b.appendChild(izq); b.appendChild(der);
+      b.addEventListener('click', function(){ elegir(i); });
+      var li = el('li'); li.appendChild(b); lista.appendChild(li);
+    });
+
+    var pre = -1;
+    plan.opciones.forEach(function(o,i){ if(pre<0 && o.destacar && o.link) pre=i; });
+    if(pre<0) plan.opciones.forEach(function(o,i){ if(pre<0 && o.link) pre=i; });
+    if(pre>=0) elegir(pre);
+    return true;
+  }
+
+  function elegir(i){
+    var op = plan.opciones[i];
+    var bs = lista.querySelectorAll('.pay-opt');
+    Array.prototype.forEach.call(bs, function(b,j){ b.setAttribute('aria-checked', String(j===i)); });
+    elegida = op;
+    totalV.textContent = precio(op.precio) + (op.periodo || '');
+    cta.disabled = false;
+    cta.textContent = op.link ? 'Continuar al pago seguro' : 'Reservar y pagar en el studio';
+  }
+
+  cta.addEventListener('click', function(){
+    if(!elegida) return;
+    // Solo se navega a un https de Stripe salido de la config. Ni la URL
+    // ni el DOM deciden el destino: eso cierra la puerta a que alguien
+    // inyecte un enlace y se lleve el pago a otro lado.
+    if(elegida.link && /^https:\/\/(buy|checkout)\.stripe\.com\//.test(elegida.link)){
+      window.location.href = elegida.link;
+    } else { window.RS_reservar(); H.cerrar(); }
+  });
+  alt.addEventListener('click', function(){ window.RS_reservar(); H.cerrar(); });
+
+  Array.prototype.forEach.call(disparadores, function(a){
+    var clave = a.getAttribute('data-plan');
+    var p = CFG.planes[clave];
+    if(!p) return;
+    // Sin ningún enlace de Stripe, el botón se queda como estaba. Mejor
+    // eso que una hoja bonita que no puede cobrar.
+    var hayLinea = false;
+    p.opciones.forEach(function(o){ if(o.link) hayLinea = true; });
+    if(!hayLinea) return;
+    a.addEventListener('click', function(e){ e.preventDefault(); if(pintar(clave)) H.abrir(a); });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   HOJA DE RESERVA
+   Antes, cualquier "Reservar" tiraba al usuario a setmore.com: otra
+   marca, otra tipografía, y de vuelta con el botón atrás si se
+   arrepentía. Ahora la agenda se abre dentro del sitio, con el marco
+   de Roller Shape alrededor.
+
+   Lo que NO puedo hacer: cambiar el diseño de la agenda en sí. Vive
+   en el dominio de Setmore y ningún sitio puede meter estilos dentro
+   del iframe de otro — esa frontera es justamente la que impide que
+   una página ajena lea lo que escribes aquí. Por eso el marco es lo
+   que se cuida, y por eso queda siempre a mano el enlace para abrirla
+   en pestaña propia si algo del pago se porta raro dentro del marco.
+═══════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var CFG = window.RS_PAGOS || {};
+  var URL_RESERVA = CFG.reservaUrl;
+  var OK = typeof URL_RESERVA === 'string' &&
+           /^https:\/\/[a-z0-9-]+\.setmore\.com\//.test(URL_RESERVA);
+
+  // Salida de emergencia global: si algo falla, siempre queda la pestaña.
+  window.RS_reservar = function(){
+    if(OK) window.open(URL_RESERVA, '_blank', 'noopener,noreferrer');
+  };
+  if(!OK) return;
+
+  var el = RSHoja.el;
+  var enlaces = document.querySelectorAll('a[href*="setmore.com"]');
+  if(!enlaces.length) return;
+
+  var H = RSHoja.crear({id:'book', ancho:'ancha', alCerrar: function(){
+    // Descarga el iframe al cerrar: ni una petición ni una cookie de
+    // Setmore siguen vivas mientras la hoja no está en uso.
+    marco.removeAttribute('src');
+    cargando.removeAttribute('hidden');
+  }});
+  var c = H.cuerpo;
+
+  var head = el('div','book-head');
+  head.appendChild(el('span','pay-eyebrow','Agenda en línea'));
+  var t = el('h2','book-title','Reserva tu sesión'); t.id = H.tituloId;
+  head.appendChild(t);
+
+  // Feedback de carga: un marco en blanco varios segundos se lee como roto.
+  var cargando = el('div','book-load');
+  cargando.setAttribute('role','status');
+  cargando.appendChild(el('div','book-spin'));
+  cargando.appendChild(el('span','','Cargando la agenda…'));
+
+  var marco = document.createElement('iframe');
+  marco.className = 'book-frame';
+  marco.title = 'Agenda de Roller Shape Studio';
+  marco.setAttribute('loading','lazy');
+  marco.setAttribute('referrerpolicy','no-referrer');
+  // allow="payment": sin esto Apple Pay y Google Pay no arrancan dentro
+  // de un marco de otro dominio. El permiso se da solo a Setmore.
+  marco.setAttribute('allow','payment ' + new URL(URL_RESERVA).origin);
+  // El sandbox recorta lo que la agenda puede hacer con ESTA página:
+  // sin allow-top-navigation no puede sacarte del sitio a donde quiera.
+  marco.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms ' +
+    'allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation');
+  marco.addEventListener('load', function(){ cargando.setAttribute('hidden',''); });
+
+  // El marco va envuelto: el borde y la sombra interior son de la hoja,
+  // no del iframe, que no acepta radios ni sombras propias.
+  var wrap = el('div','book-wrap');
+  wrap.appendChild(marco);
+
+  var pie  = el('div','book-foot');
+  var nota = el('div','book-note');
+  nota.appendChild(RSHoja.svgTrazo('M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z'));
+  nota.appendChild(el('span','','La agenda y el cobro los opera Setmore, con conexión cifrada. ' +
+    'Roller Shape Studio no recibe los datos de tu tarjeta.'));
+  pie.appendChild(nota);
+
+  [head, cargando, wrap, pie].forEach(function(n){ c.appendChild(n); });
+
+  Array.prototype.forEach.call(enlaces, function(a){
+    a.addEventListener('click', function(e){
+      // Clic con modificador o rueda: que el navegador haga lo suyo.
+      if(e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      if(!marco.getAttribute('src')) marco.setAttribute('src', URL_RESERVA);
+      H.abrir(a);
+    });
+  });
+})();
