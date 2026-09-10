@@ -50,11 +50,30 @@ var hasIO   = 'IntersectionObserver' in window;
     cd.style.left = mx+'px'; cd.style.top = my+'px';
     if(!seen){ seen = true; rx = mx; ry = my; }
   }, {passive:true});
-  (function loop(){
-    rx += (mx-rx)*0.16; ry += (my-ry)*0.16;
+  // El bucle se dormía nunca: escribía dos propiedades y forzaba un
+  // recálculo de estilo en CADA frame de la vida de la página, scroll
+  // incluido. Ahora para cuando el anillo alcanzó al cursor y lo
+  // despierta el propio movimiento del ratón.
+  var vivo = false;
+  function loop(){
+    var dx = mx-rx, dy = my-ry;
+    rx += dx*0.16; ry += dy*0.16;
     cr.style.left = rx+'px'; cr.style.top = ry+'px';
+    if(Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1){ vivo = false; return; }
     requestAnimationFrame(loop);
-  })();
+  }
+  function despertar(){ if(!vivo){ vivo = true; requestAnimationFrame(loop); } }
+  document.addEventListener('mousemove', despertar, {passive:true});
+  despertar();
+
+  // Sustituye al selector :has() que había en el CSS: delegación en el
+  // documento, y la clase se pone en el anillo, no en <body>.
+  function sobre(e){
+    var t = e.target;
+    cr.classList.toggle('is-over', !!(t && t.closest && t.closest('a,button')));
+  }
+  document.addEventListener('mouseover', sobre, {passive:true});
+  document.addEventListener('mouseout',  sobre, {passive:true});
 })();
 
 /* ── NAV: compacta, se retira al bajar y vuelve al subir ───────── */

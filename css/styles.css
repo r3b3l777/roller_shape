@@ -34,7 +34,12 @@ button{font-family:inherit}
 ═══════════════════════════════════════════════════ */
 #cd{position:fixed;width:5px;height:5px;background:var(--wine);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
 #cr{position:fixed;width:30px;height:30px;border:1px solid rgba(194,112,109,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s var(--ease),height .3s var(--ease),border-color .3s}
-body:has(a:hover) #cr,body:has(button:hover) #cr{width:46px;height:46px;border-color:var(--wine-lt)}
+/* Antes: body:has(a:hover) #cr. Ese :has() sobre <body> obliga a
+   reevaluar el estilo del DOCUMENTO ENTERO cada vez que cambia el hover,
+   y al bajar por una zona con muchos enlaces el hover cambia en cada
+   frame. Ahora el estado lo pone el JS con una clase en el propio anillo:
+   una sola invalidación, en un solo elemento. */
+#cr.is-over{width:46px;height:46px;border-color:var(--wine-lt)}
 
 /* ═══════════════════════════════════════════════════
    LOADER
@@ -850,7 +855,7 @@ body.menu-open{overflow:hidden}
 
 /* ── 11. Equipos: swipeable rail with snap ───────────────────── */
 .eq-track{
-  scroll-snap-type:x mandatory;
+  scroll-snap-type:x proximity;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior-x:contain;
   padding-left:var(--gut);padding-right:var(--gut);
@@ -858,7 +863,7 @@ body.menu-open{overflow:hidden}
 }
 .eq-track.dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
 .eq-track.dragging *{pointer-events:none}
-.ec{scroll-snap-align:start}
+.ec{scroll-snap-align:start;contain:layout paint}
 @media(max-width:1100px){
   .ec{flex-basis:min(340px,78vw)}
   .ec-img{height:240px}
