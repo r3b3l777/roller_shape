@@ -57,16 +57,62 @@ var hasIO   = 'IntersectionObserver' in window;
   })();
 })();
 
-/* ── NAV: scrolled state (rAF-throttled, passive) ─────────────── */
+/* ── NAV: compacta, se retira al bajar y vuelve al subir ───────── */
 (function(){
   var nav = document.getElementById('nav');
   if(!nav) return;
-  var ticking = false;
-  function update(){ nav.classList.toggle('scrolled', window.pageYOffset > 60); ticking = false; }
+  var ticking = false, last = window.pageYOffset;
+  function update(){
+    ticking = false;
+    var y = window.pageYOffset;
+    nav.classList.toggle('scrolled', y > 60);
+
+    var delta = y - last;
+    if(Math.abs(delta) < 6) return;   // ignora el temblor del trackpad
+    last = y;
+    if(reduce) return;
+    // Con el menú abierto o cerca del inicio, la barra siempre a la vista.
+    if(y < 120 || document.body.classList.contains('menu-open')){
+      nav.classList.remove('hidden'); return;
+    }
+    nav.classList.toggle('hidden', delta > 0);
+  }
   window.addEventListener('scroll', function(){
     if(!ticking){ ticking = true; requestAnimationFrame(update); }
   }, {passive:true});
+  // Al enfocar por teclado dentro de la barra, nunca escondida.
+  nav.addEventListener('focusin', function(){ nav.classList.remove('hidden'); });
   update();
+})();
+
+/* ── NAV: sección en pantalla ("¿dónde estoy?") ────────────────── */
+(function(){
+  var links = document.querySelectorAll('.nav-center a[href^="#"], .nav-mobile a[href^="#"]');
+  if(!links.length || !hasIO) return;
+  var byId = {}, order = [];
+  Array.prototype.forEach.call(links, function(a){
+    var id = a.getAttribute('href').slice(1);
+    if(!byId[id]){ byId[id] = []; order.push(id); }
+    byId[id].push(a);
+  });
+  var visible = [];
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(x){
+      var i = visible.indexOf(x.target.id);
+      if(x.isIntersecting){ if(i < 0) visible.push(x.target.id); }
+      else if(i >= 0){ visible.splice(i, 1); }
+    });
+    // Por orden del documento, no de llegada: al subir rápido las entradas
+    // llegan desordenadas y la marca parpadearía entre secciones.
+    visible.sort(function(a, b){ return order.indexOf(a) - order.indexOf(b); });
+    Array.prototype.forEach.call(links, function(a){ a.removeAttribute('data-current'); });
+    var now = visible[0];
+    if(now && byId[now]) byId[now].forEach(function(a){ a.setAttribute('data-current',''); });
+  }, {rootMargin:'-72px 0px -55% 0px'});
+  order.forEach(function(id){
+    var sec = document.getElementById(id);
+    if(sec) io.observe(sec);
+  });
 })();
 
 /* ── MOBILE MENU: aria state, Esc, outside tap, scroll lock ───── */
@@ -172,13 +218,82 @@ window.closeMobile = closeMobile;
     if(e.key === 'ArrowLeft') { e.preventDefault(); track.scrollBy({left:-stepPx, behavior: reduce?'auto':'smooth'}); }
   });
 
-  if(coarse) return;   // touch devices already scroll natively; don't fight them
+  // Alternativa de un solo puntero al arrastre, que WCAG 2.2 AA exige.
+  // La crea el JS: sin JS no aparecen botones que no harían nada.
+  (function(){
+    var head = track.parentNode;
+    var flecha = function(d){
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M' +
+             (d < 0 ? '15 5l-7 7 7 7' : '9 5l7 7-7 7') + '"/></svg>';
+    };
+    var nav = document.createElement('div');
+    nav.className = 'eq-nav';
+    function boton(d, etiqueta){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'eq-nav-btn';
+      b.setAttribute('aria-label', etiqueta);
+      b.setAttribute('aria-controls', 'eq-track');
+      b.innerHTML = flecha(d);
+      b.addEventListener('click', function(){
+        var card = track.querySelector('.ec');
+        var step = card ? card.getBoundingClientRect().width + 1 : 320;
+        track.scrollBy({left: d * step, behavior: reduce ? 'auto' : 'smooth'});
+      });
+      return b;
+    }
+    var prev = boton(-1, 'Equipos anteriores'), next = boton(1, 'Equipos siguientes');
+    nav.appendChild(prev); nav.appendChild(next);
+    head.insertBefore(nav, track.nextSibling);
+    function limites(){
+      prev.disabled = track.scrollLeft <= 1;
+      next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 1;
+    }
+    track.addEventListener('scroll', limites, {passive:true});
+    window.addEventListener('resize', limites);
+    limites();
+  })();
 
+  if(coarse) return;   // en táctil el scroll nativo ya trae su propia inercia
+
+  /* Arrastre con inercia.
+     Sin esto el carril se paraba en seco al soltar: el gesto traía impulso
+     y la animación lo tiraba a la basura. Se guarda la velocidad de los
+     últimos milisegundos, se proyecta dónde acabaría el desplazamiento y
+     se anima hasta ahí. La función de proyección es la de Apple
+     (Designing Fluid Interfaces), no la de v²/2a de los libros. */
   var down = false, startX = 0, startLeft = 0, moved = 0;
+  var lastX = 0, lastT = 0, vel = 0, raf = 0;
+
+  function proyectar(v, decel){        // v en px/s
+    decel = decel || 0.996;            // 0.998 = scroll normal; aquí algo más corto
+    return (v / 1000) * decel / (1 - decel);
+  }
+
+  function inercia(v0){
+    cancelAnimationFrame(raf);
+    var max = track.scrollWidth - track.clientWidth;
+    var destino = Math.max(0, Math.min(max, track.scrollLeft - proyectar(v0)));
+    var desde = track.scrollLeft, dist = destino - desde;
+    if(Math.abs(dist) < 1) return;
+    // Muelle críticamente amortiguado: sin rebote, y arranca a la velocidad
+    // exacta del dedo para que no se note la costura entre arrastre y animación.
+    var t0 = null, dur = Math.min(900, 260 + Math.abs(dist) * 0.55);
+    function paso(ts){
+      if(t0 === null) t0 = ts;
+      var p = Math.min((ts - t0) / dur, 1);
+      var e = 1 - Math.pow(1 - p, 3);   // salida cúbica: llega y se asienta
+      track.scrollLeft = desde + dist * e;
+      if(p < 1) raf = requestAnimationFrame(paso);
+    }
+    raf = requestAnimationFrame(paso);
+  }
+
   track.addEventListener('pointerdown', function(e){
     if(e.pointerType === 'touch') return;
-    down = true; moved = 0;
-    startX = e.clientX; startLeft = track.scrollLeft;
+    cancelAnimationFrame(raf);          // §3: se puede agarrar en pleno vuelo
+    down = true; moved = 0; vel = 0;
+    startX = lastX = e.clientX; startLeft = track.scrollLeft;
+    lastT = performance.now();
     track.setPointerCapture(e.pointerId);
   });
   track.addEventListener('pointermove', function(e){
@@ -186,13 +301,21 @@ window.closeMobile = closeMobile;
     var dx = e.clientX - startX;
     moved = Math.abs(dx);
     if(moved > 4) track.classList.add('dragging');
-    track.scrollLeft = startLeft - dx;
+    track.scrollLeft = startLeft - dx;   // 1:1 con el puntero, todo el recorrido
+    var now = performance.now(), dt = now - lastT;
+    if(dt > 0){
+      // Media móvil: una sola muestra da saltos y la inercia sale errática.
+      vel = 0.7 * ((e.clientX - lastX) / dt * 1000) + 0.3 * vel;
+      lastX = e.clientX; lastT = now;
+    }
   });
   function end(e){
     if(!down) return;
     down = false;
     try{ track.releasePointerCapture(e.pointerId); }catch(_){}
     setTimeout(function(){ track.classList.remove('dragging'); }, 0);
+    // Si el dedo se quedó quieto antes de soltar, no hay impulso que continuar.
+    if(!reduce && Math.abs(vel) > 60 && performance.now() - lastT < 90) inercia(vel);
   }
   track.addEventListener('pointerup', end);
   track.addEventListener('pointercancel', end);
